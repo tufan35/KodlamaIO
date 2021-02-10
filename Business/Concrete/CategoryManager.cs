@@ -1,0 +1,33 @@
+﻿using Business.Abstract;
+using DataAccess.Abstract;
+using Entities.Concrete;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+
+namespace Business.Concrete
+{
+    public class CategoryManager : ICategoryService
+    {
+         ICategoryDal _categoryDal;
+
+        public CategoryManager(ICategoryDal categoryDal)
+        {
+            _categoryDal = categoryDal;
+        }
+
+        public List<Category> GetAll()
+        {
+            return _categoryDal.GetAll();
+        }
+
+        //iş kodları yazarız dış servise erişimdir
+
+        // örn : select * from categories where cagegoryId = 1
+        public Category GetById(int categoryId)
+        {
+            return _categoryDal.Get(c => c.CategoryId == categoryId);
+        }
+    }
+}

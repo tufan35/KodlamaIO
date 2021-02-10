@@ -9,24 +9,52 @@ namespace ReferancesType
             /// arrays, class, interface referans tiplerdir
             /// 
 
-            Person person1 = new Person();
-            Person person2 = new Person();
+            //    Person person1 = new Person();
+            //    Person person2 = new Person();
 
-            person1.FirstName = "Tufan";
-            person2.FirstName = "Engin";
+            //    person1.FirstName = "Tufan";
+            //    person2.FirstName = "Engin";
 
 
-            person2 = person1; ///Burada değer eşitlemesi değil adres eşitlemesi yapmaktadır.  referanslar böyle çalışmaktadır.
-            person1.FirstName = "Derin";
+            //    person2 = person1; ///Burada değer eşitlemesi değil adres eşitlemesi yapmaktadır.  referanslar böyle çalışmaktadır.
+            //    person1.FirstName = "Derin";
 
-            Customer customer = new Customer();
-            Employee employee = new Employee();
-            employee.FirstName = "Memet";
+            //    Customer customer = new Customer();
+            //    Employee employee = new Employee();
+            //    employee.FirstName = "Memet";
 
-            PersonManager personManager = new PersonManager(); //erişilen class üzerinden işlem yapabiliriz
-            personManager.Add(employee);
+            //    PersonManager personManager = new PersonManager(); //erişilen class üzerinden işlem yapabiliriz
+            //    personManager.Add(employee);
+
+            //Demo2 
+            //var customerManager = Demo2();
+            //customerManager.Add(new OracleServerCustomer());
+
+            ICustomerDal[] customerDals = new ICustomerDal[3]
+            {
+                new SqlServerCustomerDal(),
+                new OracleServerCustomerDal(),
+                new MySqlServerCustomerDal(),
+            };
+
+
+            foreach (var customerDal in customerDals)
+            {
+                customerDal.Add();
+            }
+            Console.ReadLine();
+
+
 
         }
+
+        private static CustomerManager Demo2()
+        {
+            CustomerManager customerManager = new CustomerManager();
+            customerManager.Add(new SqlServerCustomerDal());
+            return customerManager;
+        }
+
 
         class Person
         {
