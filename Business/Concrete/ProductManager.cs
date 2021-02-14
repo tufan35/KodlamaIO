@@ -35,9 +35,10 @@ namespace Business.Concrete
         }
         //İş Kodları
         //Yetkisi var mı ?
+        //sistem bakımda kısıtlaması
         public IDataResult<List<Product>> GetAll()
         {
-            if (DateTime.Now.Hour==22)
+            if (DateTime.Now.Hour == 14)
             {
                 return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
             }
