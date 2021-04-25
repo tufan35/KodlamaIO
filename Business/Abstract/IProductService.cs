@@ -20,5 +20,7 @@ namespace Business.Abstract
         IDataResult<Product> GetbyId(int productId); //tek başına ürün döndürüyor ürün özelliğini gösterme gibi
 
         IResult Add(Product product); //void yerine ıresult yaptık 
+
+        IResult Update(Product product);
     }
 }

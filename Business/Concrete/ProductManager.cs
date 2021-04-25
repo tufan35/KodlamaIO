@@ -1,37 +1,56 @@
 ﻿using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 //Core katmanı şirketteki kullanabileceğin tüm katmanlardan oluşur !!!
 namespace Business.Concrete
 {
     public class ProductManager : IProductService
     {
          IProductDal _productDal;
+        ICategoryService _categoryService;
 
-        public ProductManager(IProductDal productDal)
+        //***** DİKKAT BİR ENTİTY MANAGER KENDİSİ HARİÇ BAŞKA BİR DALI ENJEKTE EDEMEZ !!!!!!!!!!!!!!!!!!!
+        public ProductManager(IProductDal productDal, ICategoryService categoryService)
         {
+
             _productDal = productDal;
+            _categoryService = categoryService;
         }
 
+
+        [SecuredOperation("product.add,admin")]
         [ValidationAspect(typeof(ProductValidator))]
         public IResult Add(Product product)
         {
-          
+
+            //ürün listeleme kısıtı 10
+            IResult result =    BusinessRules.Run(CheckIfProductofNameExists(product.ProductName),
+                                                  CheckIfProductofCountCategoryCorrect(product.CategoryId),
+                                                  CheckIfCategoryLimitExceded());
 
 
-
+            if (result != null)
+            {
+                return result;
+            }
             _productDal.Add(product);
 
             return new SuccessResult(Messages.ProductAdded);
+
+       
         }
         //İş Kodları
         //Yetkisi var mı ?
@@ -66,5 +85,58 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<List<ProductDetailDto>>(_productDal.GetProductDetails());
         }
+
+        [ValidationAspect(typeof(ProductValidator))]
+        public IResult Update(Product product)
+        {
+            var result = _productDal.GetAll(p => p.CategoryId == product.CategoryId).Count;
+            if (result >= 10)
+            {
+                return new ErrorResult(Messages.ProductCountofCategoryError);
+            }
+
+            throw new NotImplementedException();
+        }
+    
+    
+            //İş Kuralı Parçası
+        private IResult CheckIfProductofCountCategoryCorrect(int categoryId)
+        {
+            int result = _productDal.GetAll(p => p.CategoryId ==categoryId).Count;
+            if (result >= 10)
+            {
+                return new ErrorResult(Messages.ProductCountofCategoryError);
+            }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfProductofNameExists(string productName)
+        {
+            var result = _productDal.GetAll(p => p.ProductName == productName).Any();
+            if (result)
+            {
+                return new ErrorResult(Messages.ProductNameAlreadyExists);
+            }
+            return new SuccessResult();
+        }
+
+
+        private IResult CheckIfCategoryLimitExceded()
+        {
+            var result = _categoryService.GetAll();
+
+            if (result.Data.Count > 15)
+            {
+                return new ErrorResult(Messages.CategoryLimitExceded);
+
+            }
+            return new SuccessResult();
+        }
+
+
+
+
+
+
     }
 }
